@@ -71,7 +71,8 @@
   </div>
 
   <div class="layout">
-    <!-- LEFT -->
+
+    <!-- LEFT COLUMN -->
     <div>
       <div class="card">
         <h3>Vehicle List</h3>
@@ -112,7 +113,7 @@
       </div>
     </div>
 
-    <!-- RIGHT -->
+    <!-- RIGHT COLUMN -->
     <div>
       <div class="card" id="detailsCard">
         <h3 id="detailsTitle">No vehicle selected</h3>
@@ -145,7 +146,7 @@
   </div>
 </div>
 
-<!-- FIREBASE SCRIPT -->
+<!-- FIREBASE MODULE SCRIPT -->
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-app.js";
 import { getFirestore, collection, getDocs, addDoc, deleteDoc, doc } 
@@ -215,7 +216,6 @@ function renderList() {
       <td>${v.plate}</td>
       <td>${v.nextServiceDate || "—"}</td>
     `;
-
     tr.onclick = () => showDetails(v.id);
     vehicleTableBody.appendChild(tr);
   });
@@ -331,5 +331,18 @@ function handleFormSubmit(e) {
   });
 }
 
-vehicleForm.onsubmit = handle
+vehicleForm.onsubmit = handleFormSubmit;
+
+document.addEventListener("DOMContentLoaded", () => {
+  window.dbApi.dbLoadVehicles().then(list => {
+    vehicles = list;
+    renderStats();
+    renderList();
+  });
+});
+</script>
+
+</body>
+</html>
+
 
