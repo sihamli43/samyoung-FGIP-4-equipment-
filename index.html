@@ -51,7 +51,7 @@
     <label>Password</label>
     <input id="loginPass" type="password" style="width:100%; margin-bottom:10px;">
 
-    <button class="btn btn-primary" onclick="attemptLogin()" style="width:100%;">Login</button>
+    <button type="button" class="btn btn-primary" id="loginBtn" style="width:100%;">Login</button>
 
     <p id="loginError" style="color:red; text-align:center; display:none;">Invalid login</p>
   </div>
@@ -188,6 +188,7 @@ window.dbApi = { dbLoadVehicles, dbAddVehicle, dbDeleteVehicle };
 let vehicles = [];
 let currentVehicleId = null;
 
+/* ---------------------- LOGIN --------------------- */
 function attemptLogin() {
   if (loginUser.value === "samyoung" && loginPass.value === "FGIP-4") {
     loginScreen.style.display = "none";
@@ -196,7 +197,9 @@ function attemptLogin() {
     loginError.style.display = "block";
   }
 }
+document.getElementById("loginBtn").onclick = attemptLogin;
 
+/* ---------------------- RENDER --------------------- */
 function renderStats() {
   totalVehicles.textContent = vehicles.length;
   needsService.textContent = vehicles.filter(v => v.nextServiceDate).length;
@@ -221,6 +224,7 @@ function renderList() {
   });
 }
 
+/* ---------------------- DETAILS --------------------- */
 function showDetails(id) {
   const v = vehicles.find(x => x.id === id);
   if (!v) return;
@@ -252,6 +256,7 @@ function showDetails(id) {
   detailsBody.style.display = "block";
 }
 
+/* ---------------------- DELETE --------------------- */
 function deleteVehicle() {
   if (!currentVehicleId) return;
 
@@ -267,6 +272,7 @@ function deleteVehicle() {
   });
 }
 
+/* ---------------------- ADD VEHICLE --------------------- */
 function handleFormSubmit(e) {
   e.preventDefault();
 
@@ -333,6 +339,7 @@ function handleFormSubmit(e) {
 
 vehicleForm.onsubmit = handleFormSubmit;
 
+/* ---------------------- LOAD DATA --------------------- */
 document.addEventListener("DOMContentLoaded", () => {
   window.dbApi.dbLoadVehicles().then(list => {
     vehicles = list;
