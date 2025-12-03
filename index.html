@@ -326,7 +326,7 @@
         <img src="assets/logo.png" alt="Samyoung Logo" style="height:50px;">
         <h1>SAMYOUNG FGIP -4</h1>
       </div>
-      <span class="pill" id="storageStatus">Using local storage</span>
+      <span class="pill" id="storageStatus">Using online database (Firebase)</span>
     </header>
 
     <div id="notificationBar" class="notification-bar danger">
@@ -511,12 +511,51 @@
         </div>
 
         <p class="muted">
-          All data is stored locally in your browser (localStorage). If you open this file on another
-          device or clear browser data, the list will reset.
+          All data is stored in an online database (Firebase Firestore). You can open this dashboard from any device using the same link and see the same equipment list.
         </p>
       </div>
     </div>
-  </div>
+  </d  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-app.js";
+    import { getFirestore, collection, getDocs, addDoc, deleteDoc, doc, updateDoc } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-firestore.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyAwAMnqkJz9uifaaKETPTyFkIzhPfjQfEs",
+      authDomain: "samyoung-equipment.firebaseapp.com",
+      projectId: "samyoung-equipment",
+      storageBucket: "samyoung-equipment.firebasestorage.app",
+      messagingSenderId: "1085341907778",
+      appId: "1:1085341907778:web:0d7172ab61bcfbaf52a6db",
+      measurementId: "G-DZ095FKLSS"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
+
+    const vehiclesCol = collection(db, "vehicles");
+
+    async function dbLoadVehicles() {
+      const snap = await getDocs(vehiclesCol);
+      return snap.docs.map(d => ({ id: d.id, ...d.data() }));
+    }
+
+    async function dbAddVehicle(data) {
+      const ref = await addDoc(vehiclesCol, data);
+      return { ...data, id: ref.id };
+    }
+
+    async function dbDeleteVehicle(id) {
+      await deleteDoc(doc(vehiclesCol, id));
+    }
+
+    async function dbUpdateVehicle(id, data) {
+      await updateDoc(doc(vehiclesCol, id), data);
+    }
+
+    window.dbApi = { dbLoadVehicles, dbAddVehicle, dbDeleteVehicle, dbUpdateVehicle };
+  </script>
+
+iv>
 
   <script>
     const STORAGE_KEY = "equipmentVehicleData_v1";
@@ -789,8 +828,7 @@
       }
 
       function addVehicle(imageDataUrl, docsArray) {
-        const newVehicle = {
-          id: createId(),
+        const newVehicleData = {
           name: name,
           plate: plate,
           driver: driver,
@@ -805,11 +843,27 @@
           docs: docsArray || [],
         };
 
-        vehicles.push(newVehicle);
-        saveVehicles();
-        renderStats();
-        renderList();
-        showDetails(newVehicle.id);
+        if (window.dbApi && window.dbApi.dbAddVehicle) {
+          window.dbApi
+            .dbAddVehicle(newVehicleData)
+            .then(function (saved) {
+              vehicles.push(saved);
+              renderStats();
+              renderList();
+              showDetails(saved.id);
+            })
+            .catch(function (err) {
+              console.error("Error saving vehicle to Firestore", err);
+              alert("Could not save to online database. Please try again.");
+            });
+        } else {
+          // Fallback: keep local only if dbApi not ready
+          const localVehicle = Object.assign({ id: createId() }, newVehicleData);
+          vehicles.push(localVehicle);
+          renderStats();
+          renderList();
+          showDetails(localVehicle.id);
+        }
 
         event.target.reset();
         imageInput.value = "";
@@ -848,21 +902,36 @@
 
       if (!confirm("Delete " + name + "? This cannot be undone.")) return;
 
-      vehicles = vehicles.filter(function (v) {
-        return v.id !== currentVehicleId;
-      });
-      saveVehicles();
-      renderStats();
-      renderList();
-      checkInspectionAlerts();
+      function finishLocalDelete() {
+        vehicles = vehicles.filter(function (v) {
+          return v.id !== currentVehicleId;
+        });
+        renderStats();
+        renderList();
+        checkInspectionAlerts();
 
-      currentVehicleId = null;
-      const body = document.getElementById("detailsBody");
-      document.getElementById("detailsTitle").textContent = "No vehicle selected";
-      document.getElementById("detailsSubtitle").textContent =
-        "Select a vehicle from the list to view details.";
-      document.getElementById("detailsTag").textContent = "–";
-      if (body) body.style.display = "none";
+        currentVehicleId = null;
+        const body = document.getElementById("detailsBody");
+        document.getElementById("detailsTitle").textContent = "No vehicle selected";
+        document.getElementById("detailsSubtitle").textContent =
+          "Select a vehicle from the list to view details.";
+        document.getElementById("detailsTag").textContent = "–";
+        if (body) body.style.display = "none";
+      }
+
+      if (window.dbApi && window.dbApi.dbDeleteVehicle && currentVehicleId) {
+        window.dbApi
+          .dbDeleteVehicle(currentVehicleId)
+          .then(function () {
+            finishLocalDelete();
+          })
+          .catch(function (err) {
+            console.error("Error deleting from Firestore", err);
+            alert("Could not delete from online database. Please try again.");
+          });
+      } else {
+        finishLocalDelete();
+      }
     }
 
     function printDetails() {
@@ -883,18 +952,32 @@
     }
 
     document.addEventListener("DOMContentLoaded", function () {
-      vehicles = loadVehicles();
-      renderStats();
-      renderList();
-      checkInspectionAlerts();
-
-      if (vehicles.length > 0) {
-        showDetails(vehicles[0].id);
-      }
-
       const form = document.getElementById("vehicleForm");
       form.addEventListener("submit", handleFormSubmit);
+
+      if (window.dbApi && window.dbApi.dbLoadVehicles) {
+        window.dbApi.dbLoadVehicles().then(function (items) {
+          vehicles = items || [];
+          renderStats();
+          renderList();
+          checkInspectionAlerts();
+          if (vehicles.length > 0) {
+            showDetails(vehicles[0].id);
+          }
+        }).catch(function (err) {
+          console.error("Error loading vehicles from Firestore", err);
+          vehicles = [];
+          renderStats();
+          renderList();
+        });
+      } else {
+        console.warn("dbApi not ready, starting with empty list");
+        vehicles = [];
+        renderStats();
+        renderList();
+      }
     });
   </script>
 </body>
 </html>
+
