@@ -1,77 +1,100 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
+  <meta charset="UTF-8" />
   <title>SAMYOUNG FGIP -4 Equipment Dashboard</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
   <style>
     * { box-sizing: border-box; font-family: system-ui, sans-serif; }
     body { margin: 0; background: #f3f4f6; color: #111827; }
     .app { max-width: 1200px; margin: 0 auto; padding: 16px; }
 
-    header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 20px; }
-    header h1 { display: flex; align-items: center; gap: 10px; margin: 0; }
-    header img { height: 50px; }
+    header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
+    header h1 { margin: 0; font-size: 1.7rem; display: flex; align-items: center; gap: 10px; }
+
+    header img { height: 50px; border-radius: 6px; }
 
     .card { background: white; padding: 18px; border-radius: 12px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); margin-bottom: 16px; }
 
     .stats { display: flex; gap: 16px; flex-wrap: wrap; }
-    .stat-card { flex: 1; background: #eff6ff; padding: 12px; border-radius: 10px; min-width: 150px; }
+    .stat-card { flex: 1; background:#eff6ff; border-radius:10px; padding:12px; min-width:150px; }
 
     .layout { display: grid; grid-template-columns: 2fr 3fr; gap: 16px; }
-    @media(max-width:800px) { .layout { grid-template-columns: 1fr; } }
+    @media(max-width:800px){ .layout{ grid-template-columns:1fr; } }
 
-    table { width: 100%; border-collapse: collapse; }
-    th, td { padding: 8px; border-bottom: 1px solid #ddd; }
-    tr:hover { background: #eef2ff; cursor: pointer; }
+    table { width: 100%; border-collapse: collapse; font-size: 0.9rem; }
+    th, td { padding: 8px 10px; border-bottom: 1px solid #e5e7eb; }
+    tr:hover { background:#eef2ff; cursor:pointer; }
 
-    .thumb { width: 40px; height: 40px; border-radius: 6px; object-fit: cover; }
+    .thumb {
+      width: 40px;
+      height: 40px;
+      border-radius: 8px;
+      object-fit: cover;
+    }
 
-    .vehicle-image { width: 100%; height: 220px; object-fit: cover; border-radius: 10px; background: #e5e7eb; }
+    .details-body { display:grid; grid-template-columns:1.2fr 2fr; gap:16px; }
+    @media(max-width:600px){ .details-body{ grid-template-columns:1fr; } }
 
-    .detail-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px; }
+    .vehicle-image { width: 100%; border-radius:10px; object-fit:cover; max-height:220px; background:#e5e7eb; }
 
-    .btn { padding: 8px 14px; border-radius: 20px; border: none; cursor: pointer; }
-    .btn-primary { background: #2563eb; color: white; }
-    .btn-ghost { background: transparent; color: #444; }
+    .detail-grid { display:grid; grid-template-columns:repeat(2,1fr); gap:10px; }
+    label { font-size:0.8rem; margin-bottom:2px; display:block; }
+    input { width:100%; padding:6px; border:1px solid #ccc; border-radius:6px; }
+
+    .btn { padding:8px 14px; border:none; border-radius:20px; cursor:pointer; }
+    .btn-primary { background:#2563eb; color:white; }
+    .btn-ghost { background:transparent; color:#555; }
+
+    @media print {
+      body * { visibility: hidden; }
+      #detailsCard, #detailsCard * { visibility: visible; }
+      #detailsCard { position:absolute; inset:0; margin:0; }
+    }
   </style>
 </head>
 
 <body>
 
-<!-- LOGIN SCREEN -->
+<!-- Login Screen -->
 <div id="loginScreen" style="position:fixed; inset:0; background:#f3f4f6; display:flex; align-items:center; justify-content:center;">
-  <div style="background:white; padding:24px; width:300px; border-radius:12px; box-shadow:0 4px 10px rgba(0,0,0,0.1);">
+  <div style="background:white; padding:24px; border-radius:12px; width:300px;">
     <h2 style="text-align:center; margin-top:0;">Login</h2>
-
     <label>Username</label>
-    <input id="loginUser" style="width:100%; margin-bottom:10px;">
-
+    <input id="loginUser">
     <label>Password</label>
-    <input id="loginPass" type="password" style="width:100%; margin-bottom:10px;">
-
-    <button class="btn btn-primary" onclick="attemptLogin()" style="width:100%;">Login</button>
-
+    <input id="loginPass" type="password">
+    <button onclick="attemptLogin()" class="btn btn-primary" style="width:100%; margin-top:12px;">Login</button>
     <p id="loginError" style="color:red; text-align:center; display:none;">Invalid login</p>
   </div>
 </div>
 
-<!-- MAIN APP -->
+<!-- Main App -->
 <div class="app" id="mainApp" style="display:none;">
 
   <header>
-    <h1><img src="assets/logo.png" alt="Logo"> SAMYOUNG FGIP -4</h1>
-    <span style="opacity:0.7;">Using Online Database (Firestore)</span>
+    <h1>
+      <img src="assets/logo.png" alt="Samyoung Logo">
+      SAMYOUNG FGIP -4
+    </h1>
+    <span>Using online database (Firestore)</span>
   </header>
 
   <div class="card stats">
-    <div class="stat-card"><div>Total Vehicles</div><div id="totalVehicles" style="font-size:1.3rem;font-weight:700;">0</div></div>
-    <div class="stat-card"><div>Upcoming Service</div><div id="needsService" style="font-size:1.3rem;font-weight:700;">0</div></div>
+    <div class="stat-card">
+      <div>Total Vehicles</div>
+      <div id="totalVehicles" style="font-size:1.4rem;font-weight:700;">0</div>
+    </div>
+    <div class="stat-card">
+      <div>Upcoming Service</div>
+      <div id="needsService" style="font-size:1.4rem;font-weight:700;">0</div>
+    </div>
   </div>
 
   <div class="layout">
-    <!-- LEFT -->
+    
+    <!-- LEFT SIDE -->
     <div>
       <div class="card">
         <h3>Vehicle List</h3>
@@ -100,8 +123,8 @@
           <label>Iqama</label><input id="iqama">
           <label>License</label><input id="license">
           <label>Inspection Date</label><input id="inspectionDate" type="date">
-          <label>Inspection Expiry</label><input id="expiryDate" type="date">
-          <label>Medical Fitness Expiry</label><input id="medicalExpiryDate" type="date">
+          <label>Inspection Expiry Date</label><input id="expiryDate" type="date">
+          <label>Medical Fitness Expiry Date</label><input id="medicalExpiryDate" type="date">
           <label>Last Service Date</label><input id="serviceDate" type="date">
           <label>Next Service Date</label><input id="nextServiceDate" type="date">
           <label>Photo</label><input id="image" type="file" accept="image/*">
@@ -109,19 +132,21 @@
 
           <button class="btn btn-primary" style="margin-top:10px;">Add Vehicle</button>
         </form>
+
       </div>
     </div>
 
-    <!-- RIGHT -->
+    <!-- RIGHT SIDE -->
     <div>
       <div class="card" id="detailsCard">
         <h3 id="detailsTitle">No vehicle selected</h3>
-        <p id="detailsSubtitle">Select a vehicle to view details</p>
+        <p id="detailsSubtitle">Select a vehicle from the list</p>
 
-        <button class="btn btn-ghost" onclick="deleteVehicle()">Delete</button>
-        <button class="btn btn-primary" onclick="window.print()">Print</button>
+        <button onclick="deleteVehicle()" class="btn btn-ghost">Delete</button>
+        <button onclick="printDetails()" class="btn btn-primary">Print</button>
 
-        <div id="detailsBody" style="display:none; margin-top:10px;">
+        <div id="detailsBody" style="display:none;">
+
           <img id="detailsImage" class="vehicle-image">
 
           <div class="detail-grid">
@@ -138,6 +163,7 @@
 
           <h4>Documents</h4>
           <ul id="detailsDocs"></ul>
+
         </div>
       </div>
     </div>
@@ -145,11 +171,10 @@
   </div>
 </div>
 
-<!-- FIREBASE SCRIPT -->
+<!-- FIREBASE MODULE SCRIPT -->
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-app.js";
-import { getFirestore, collection, getDocs, addDoc, deleteDoc, doc } 
-  from "https://www.gstatic.com/firebasejs/11.0.1/firebase-firestore.js";
+import { getFirestore, collection, getDocs, addDoc, deleteDoc, doc } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-firestore.js";
 
 const firebaseConfig = {
   apiKey: "AIzaSyAwAMnqkJz9uifaaKETPTyFkIzhPfjQfEs",
@@ -182,12 +207,12 @@ async function dbDeleteVehicle(id) {
 window.dbApi = { dbLoadVehicles, dbAddVehicle, dbDeleteVehicle };
 </script>
 
-<!-- MAIN LOGIC -->
+<!-- MAIN APP LOGIC -->
 <script>
 let vehicles = [];
 let currentVehicleId = null;
 
-function attemptLogin() {
+function attemptLogin(){
   if (loginUser.value === "samyoung" && loginPass.value === "FGIP-4") {
     loginScreen.style.display = "none";
     mainApp.style.display = "block";
@@ -197,27 +222,33 @@ function attemptLogin() {
 }
 
 function renderStats() {
-  totalVehicles.textContent = vehicles.length;
-  needsService.textContent = vehicles.filter(v => v.nextServiceDate).length;
+  document.getElementById("totalVehicles").textContent = vehicles.length;
+  document.getElementById("needsService").textContent =
+    vehicles.filter(v => v.nextServiceDate).length;
 }
 
 function renderList() {
-  vehicleTableBody.innerHTML = "";
+  const tbody = document.getElementById("vehicleTableBody");
+  tbody.innerHTML = "";
 
   vehicles.forEach(v => {
     const tr = document.createElement("tr");
     tr.dataset.id = v.id;
 
+    const photoHtml = v.imageDataUrl
+      ? `<img src="${v.imageDataUrl}" class="thumb">`
+      : "—";
+
     tr.innerHTML = `
-      <td>${v.imageDataUrl ? `<img class="thumb" src="${v.imageDataUrl}">` : "—"}</td>
-      <td>${v.name}</td>
+      <td>${photoHtml}</td>
+      <td>${v.name || "—"}</td>
       <td>${v.driver || "—"}</td>
-      <td>${v.plate}</td>
+      <td>${v.plate || "—"}</td>
       <td>${v.nextServiceDate || "—"}</td>
     `;
 
     tr.onclick = () => showDetails(v.id);
-    vehicleTableBody.appendChild(tr);
+    tbody.appendChild(tr);
   });
 }
 
@@ -238,14 +269,18 @@ function showDetails(id) {
   detailsService.textContent = v.serviceDate || "—";
   detailsNextService.textContent = v.nextServiceDate || "—";
 
-  detailsImage.src = v.imageDataUrl || "";
+  if (v.imageDataUrl) {
+    detailsImage.src = v.imageDataUrl;
+    detailsImage.style.display = "block";
+  }
 
-  detailsDocs.innerHTML = "";
+  const docsList = document.getElementById("detailsDocs");
+  docsList.innerHTML = "";
   if (v.docs && v.docs.length) {
     v.docs.forEach(d => {
       const li = document.createElement("li");
       li.innerHTML = `<a href="${d.dataUrl}" target="_blank">${d.name}</a>`;
-      detailsDocs.appendChild(li);
+      docsList.appendChild(li);
     });
   }
 
@@ -267,71 +302,72 @@ function deleteVehicle() {
   });
 }
 
-function handleFormSubmit(e) {
+function handleFormSubmit(e){
   e.preventDefault();
 
-  const data = {
-    name: name.value,
-    plate: plate.value,
-    driver: driver.value,
-    iqama: iqama.value,
-    license: license.value,
-    inspectionDate: inspectionDate.value,
-    expiryDate: expiryDate.value,
-    medicalExpiryDate: medicalExpiryDate.value,
-    serviceDate: serviceDate.value,
-    nextServiceDate: nextServiceDate.value,
-    imageDataUrl: null,
-    docs: []
-  };
+  const name = document.getElementById("name").value;
+  const plate = document.getElementById("plate").value;
+  const driver = document.getElementById("driver").value;
+  const iqama = document.getElementById("iqama").value;
+  const license = document.getElementById("license").value;
+  const inspectionDate = inspectionDate.value;
+  const expiryDate = expiryDate.value;
+  const medicalExpiryDate = medicalExpiryDate.value;
+  const serviceDate = serviceDate.value;
+  const nextServiceDate = nextServiceDate.value;
 
-  const img = image.files[0];
-  const docFiles = docs.files;
+  const imageFile = image.files[0];
+  const docsFiles = docs.files;
 
-  function saveFinal() {
+  function finishAdd(imageDataUrl, docsArr) {
+    const data = {
+      name, plate, driver, iqama, license,
+      inspectionDate, expiryDate, medicalExpiryDate,
+      serviceDate, nextServiceDate,
+      imageDataUrl, docs: docsArr
+    };
+
     window.dbApi.dbAddVehicle(data).then(saved => {
       vehicles.push(saved);
       renderList();
       renderStats();
       showDetails(saved.id);
     });
-    vehicleForm.reset();
+
+    e.target.reset();
   }
 
-  function readDocs(done) {
-    let out = [];
-    if (!docFiles.length) return done(out);
+  function readFiles(files, callback) {
+    const arr = [];
+    let remaining = files.length;
+    if (!remaining) return callback([]);
 
-    let remaining = docFiles.length;
-    for (const file of docFiles) {
+    for (const f of files) {
       const r = new FileReader();
       r.onload = () => {
-        out.push({ name: file.name, dataUrl: r.result });
-        if (--remaining === 0) done(out);
+        arr.push({ name: f.name, dataUrl: r.result });
+        if (--remaining === 0) callback(arr);
       };
-      r.readAsDataURL(file);
+      r.readAsDataURL(f);
     }
   }
 
-  function readImage(next) {
-    if (!img) return next(null);
-
+  if (imageFile) {
     const reader = new FileReader();
-    reader.onload = () => next(reader.result);
-    reader.readAsDataURL(img);
-  }
-
-  readImage(imgUrl => {
-    data.imageDataUrl = imgUrl;
-
-    readDocs(docArr => {
-      data.docs = docArr;
-      saveFinal();
+    reader.onload = (ev) => {
+      readFiles(docsFiles, (docsArr) => {
+        finishAdd(ev.target.result, docsArr);
+      });
+    };
+    reader.readAsDataURL(imageFile);
+  } else {
+    readFiles(docsFiles, (docsArr) => {
+      finishAdd(null, docsArr);
     });
-  });
+  }
 }
 
-vehicleForm.onsubmit = handleFormSubmit;
+document.getElementById("vehicleForm").onsubmit = handleFormSubmit;
 
 document.addEventListener("DOMContentLoaded", () => {
   window.dbApi.dbLoadVehicles().then(list => {
