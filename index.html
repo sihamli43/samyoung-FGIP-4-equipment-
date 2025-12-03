@@ -2,270 +2,30 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <title>Equipment / Vehicle Dashboard</title>
+  <title>SAMYOUNG FGIP -4 Equipment Dashboard</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
   <style>
-    * {
-      box-sizing: border-box;
-      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-    }
+    * { box-sizing: border-box; font-family: system-ui, sans-serif; }
+    body { margin: 0; background: #f3f4f6; color: #111827; }
+    .app { max-width: 1200px; margin: 0 auto; padding: 16px; }
 
-    body {
-      margin: 0;
-      background: #f3f4f6;
-      color: #111827;
-    }
+    header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
+    header h1 { margin: 0; font-size: 1.7rem; display: flex; align-items: center; gap: 10px; }
 
-    .app {
-      max-width: 1200px;
-      margin: 0 auto;
-      padding: 16px;
-    }
+    header img { height: 50px; border-radius: 6px; }
 
-    header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-bottom: 16px;
-    }
+    .card { background: white; padding: 18px; border-radius: 12px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); margin-bottom: 16px; }
 
-    header h1 {
-      margin: 0;
-      font-size: 1.6rem;
-    }
+    .stats { display: flex; gap: 16px; flex-wrap: wrap; }
+    .stat-card { flex: 1; background:#eff6ff; border-radius:10px; padding:12px; min-width:150px; }
 
-    .card {
-      background: #ffffff;
-      border-radius: 12px;
-      padding: 16px;
-      box-shadow: 0 4px 10px rgba(15, 23, 42, 0.08);
-      margin-bottom: 16px;
-    }
+    .layout { display: grid; grid-template-columns: 2fr 3fr; gap: 16px; }
+    @media(max-width:800px){ .layout{ grid-template-columns:1fr; } }
 
-    .stats {
-      display: flex;
-      gap: 16px;
-      flex-wrap: wrap;
-    }
-
-    .stat-card {
-      flex: 1;
-      min-width: 150px;
-      background: #eff6ff;
-      border-radius: 10px;
-      padding: 12px 16px;
-    }
-
-    .stat-label {
-      font-size: 0.8rem;
-      color: #6b7280;
-      text-transform: uppercase;
-      letter-spacing: 0.04em;
-    }
-
-    .stat-value {
-      font-size: 1.6rem;
-      font-weight: 600;
-      margin-top: 4px;
-    }
-
-    .layout {
-      display: grid;
-      grid-template-columns: 2fr 3fr;
-      gap: 16px;
-    }
-
-    @media (max-width: 800px) {
-      .layout {
-        grid-template-columns: 1fr;
-      }
-    }
-
-    .vehicle-list {
-      max-height: 400px;
-      overflow-y: auto;
-      border-radius: 10px;
-      border: 1px solid #e5e7eb;
-    }
-
-    table {
-      width: 100%;
-      border-collapse: collapse;
-      font-size: 0.9rem;
-    }
-
-    thead {
-      position: sticky;
-      top: 0;
-      background: #f9fafb;
-      z-index: 1;
-    }
-
-    th, td {
-      padding: 8px 10px;
-      text-align: left;
-      border-bottom: 1px solid #e5e7eb;
-    }
-
-    tr:hover {
-      background: #eef2ff;
-      cursor: pointer;
-    }
-
-    th {
-      font-weight: 600;
-      font-size: 0.8rem;
-      color: #6b7280;
-    }
-
-    .tag {
-      display: inline-block;
-      padding: 2px 8px;
-      border-radius: 999px;
-      font-size: 0.75rem;
-      background: #e5f3ff;
-      color: #1d4ed8;
-    }
-
-    .details-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-bottom: 8px;
-    }
-
-    .details-body {
-      display: grid;
-      grid-template-columns: 1.2fr 2fr;
-      gap: 16px;
-    }
-
-    @media (max-width: 600px) {
-      .details-body {
-        grid-template-columns: 1fr;
-      }
-    }
-
-    .vehicle-image {
-      width: 100%;
-      border-radius: 10px;
-      object-fit: cover;
-      max-height: 220px;
-      background: #e5e7eb;
-    }
-
-    .placeholder-image {
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 0.8rem;
-      color: #6b7280;
-      height: 180px;
-      border-radius: 10px;
-      background: #e5e7eb;
-    }
-
-    .detail-grid {
-      display: grid;
-      grid-template-columns: repeat(2, minmax(0, 1fr));
-      gap: 8px 16px;
-      font-size: 0.9rem;
-    }
-
-    .detail-item {
-      display: flex;
-      flex-direction: column;
-    }
-
-    .detail-label {
-      font-size: 0.75rem;
-      text-transform: uppercase;
-      letter-spacing: 0.06em;
-      color: #6b7280;
-      margin-bottom: 2px;
-    }
-
-    .detail-value {
-      font-weight: 500;
-    }
-
-    .section-title {
-      font-size: 1rem;
-      font-weight: 600;
-      margin-bottom: 8px;
-    }
-
-    form {
-      display: grid;
-      gap: 8px;
-      grid-template-columns: repeat(2, minmax(0, 1fr));
-    }
-
-    form .full {
-      grid-column: span 2;
-    }
-
-    label {
-      font-size: 0.8rem;
-      color: #4b5563;
-      margin-bottom: 2px;
-      display: block;
-    }
-
-    input {
-      width: 100%;
-      padding: 6px 8px;
-      border-radius: 8px;
-      border: 1px solid #d1d5db;
-      font-size: 0.85rem;
-    }
-
-    input:focus {
-      outline: none;
-      border-color: #2563eb;
-      box-shadow: 0 0 0 1px rgba(37, 99, 235, 0.3);
-    }
-
-    .btn {
-      border: none;
-      outline: none;
-      border-radius: 999px;
-      padding: 8px 14px;
-      font-size: 0.9rem;
-      cursor: pointer;
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      gap: 6px;
-    }
-
-    .btn-primary {
-      background: #2563eb;
-      color: white;
-    }
-
-    .btn-primary:hover {
-      background: #1d4ed8;
-    }
-
-    .btn-ghost {
-      background: transparent;
-      color: #4b5563;
-    }
-
-    .muted {
-      color: #6b7280;
-      font-size: 0.85rem;
-    }
-
-    .pill {
-      font-size: 0.7rem;
-      padding: 2px 8px;
-      border-radius: 999px;
-      background: #ecfeff;
-      color: #0f766e;
-      border: 1px solid #99f6e4;
-    }
+    table { width: 100%; border-collapse: collapse; font-size: 0.9rem; }
+    th, td { padding: 8px 10px; border-bottom: 1px solid #e5e7eb; }
+    tr:hover { background:#eef2ff; cursor:pointer; }
 
     .thumb {
       width: 40px;
@@ -274,710 +34,350 @@
       object-fit: cover;
     }
 
-    .notification-bar {
-      display: none;
-      align-items: center;
-      justify-content: space-between;
-      padding: 8px 12px;
-      border-radius: 999px;
-      margin-bottom: 12px;
-      font-size: 0.85rem;
-    }
+    .details-body { display:grid; grid-template-columns:1.2fr 2fr; gap:16px; }
+    @media(max-width:600px){ .details-body{ grid-template-columns:1fr; } }
 
-    .notification-bar.danger {
-      background: #fee2e2;
-      color: #b91c1c;
-      border: 1px solid #fecaca;
-    }
+    .vehicle-image { width: 100%; border-radius:10px; object-fit:cover; max-height:220px; background:#e5e7eb; }
+
+    .detail-grid { display:grid; grid-template-columns:repeat(2,1fr); gap:10px; }
+    label { font-size:0.8rem; margin-bottom:2px; display:block; }
+    input { width:100%; padding:6px; border:1px solid #ccc; border-radius:6px; }
+
+    .btn { padding:8px 14px; border:none; border-radius:20px; cursor:pointer; }
+    .btn-primary { background:#2563eb; color:white; }
+    .btn-ghost { background:transparent; color:#555; }
 
     @media print {
-      body * {
-        visibility: hidden;
-      }
-      #detailsCard, #detailsCard * {
-        visibility: visible;
-      }
-      #detailsCard {
-        position: absolute;
-        inset: 0;
-        margin: 0;
-        box-shadow: none;
-      }
+      body * { visibility: hidden; }
+      #detailsCard, #detailsCard * { visibility: visible; }
+      #detailsCard { position:absolute; inset:0; margin:0; }
     }
   </style>
 </head>
+
 <body>
-  <!-- Simple Login Screen -->
-  <div id="loginScreen" style="position:fixed; inset:0; background:#f3f4f6; display:flex; align-items:center; justify-content:center;">
-    <div style="background:white; padding:24px; border-radius:12px; width:300px; box-shadow:0 4px 10px rgba(0,0,0,0.1);">
-      <h2 style="margin-top:0; text-align:center;">Login</h2>
-      <label>Username</label>
-      <input id="loginUser" placeholder="Enter username" style="width:100%; margin-bottom:10px;">
-      <label>Password</label>
-      <input id="loginPass" type="password" placeholder="Enter password" style="width:100%; margin-bottom:16px;">
-      <button onclick="attemptLogin()" class="btn btn-primary" style="width:100%;">Login</button>
-      <p id="loginError" style="color:red; font-size:0.8rem; text-align:center; display:none;">Invalid username or password</p>
+
+<!-- Login Screen -->
+<div id="loginScreen" style="position:fixed; inset:0; background:#f3f4f6; display:flex; align-items:center; justify-content:center;">
+  <div style="background:white; padding:24px; border-radius:12px; width:300px;">
+    <h2 style="text-align:center; margin-top:0;">Login</h2>
+    <label>Username</label>
+    <input id="loginUser">
+    <label>Password</label>
+    <input id="loginPass" type="password">
+    <button onclick="attemptLogin()" class="btn btn-primary" style="width:100%; margin-top:12px;">Login</button>
+    <p id="loginError" style="color:red; text-align:center; display:none;">Invalid login</p>
+  </div>
+</div>
+
+<!-- Main App -->
+<div class="app" id="mainApp" style="display:none;">
+
+  <header>
+    <h1>
+      <img src="assets/logo.png" alt="Samyoung Logo">
+      SAMYOUNG FGIP -4
+    </h1>
+    <span>Using online database (Firestore)</span>
+  </header>
+
+  <div class="card stats">
+    <div class="stat-card">
+      <div>Total Vehicles</div>
+      <div id="totalVehicles" style="font-size:1.4rem;font-weight:700;">0</div>
+    </div>
+    <div class="stat-card">
+      <div>Upcoming Service</div>
+      <div id="needsService" style="font-size:1.4rem;font-weight:700;">0</div>
     </div>
   </div>
 
-  <div class="app" style="display:none;" id="mainApp">
-    <header>
-      <div style="display:flex; align-items:center; gap:12px;">
-        <img src="assets/logo.png" alt="Samyoung Logo" style="height:50px;">
-        <h1>SAMYOUNG FGIP -4</h1>
-      </div>
-      <span class="pill" id="storageStatus">Using online database (Firebase)</span>
-    </header>
+  <div class="layout">
+    
+    <!-- LEFT SIDE -->
+    <div>
+      <div class="card">
+        <h3>Vehicle List</h3>
 
-    <div id="notificationBar" class="notification-bar danger">
-      <span id="notificationText">No upcoming inspections.</span>
-      <button class="btn btn-ghost" style="padding:4px 10px; font-size:0.75rem;" onclick="dismissNotification()">Dismiss</button>
-    </div>
-
-    <!-- Stats -->
-    <div class="card stats">
-      <div class="stat-card">
-        <div class="stat-label">Total Vehicles</div>
-        <div class="stat-value" id="totalVehicles">0</div>
-      </div>
-      <div class="stat-card">
-        <div class="stat-label">With Upcoming Service</div>
-        <div class="stat-value" id="needsService">0</div>
-      </div>
-    </div>
-
-    <div class="layout">
-      <!-- Left: List + New Vehicle Form -->
-      <div>
-        <div class="card">
-          <div class="section-title">Vehicles</div>
-          <div class="muted">Click a row to view full details on the right.</div>
-          <div class="vehicle-list" id="vehicleListWrapper">
-            <table>
-              <thead>
-                <tr>
-                  <th>Photo</th>
-                  <th>Name</th>
-                  <th>Driver</th>
-                  <th>Plate / ID</th>
-                  <th>Next Service</th>
-                </tr>
-              </thead>
-              <tbody id="vehicleTableBody">
-                <!-- Filled by JS -->
-              </tbody>
-            </table>
-          </div>
-        </div>
-
-        <div class="card">
-          <div class="section-title">Add New Vehicle / Equipment</div>
-          <form id="vehicleForm">
-            <div class="full">
-              <label for="name">Equipment / Vehicle Name *</label>
-              <input id="name" required placeholder="e.g. Toyota Hilux" />
-            </div>
-
-            <div>
-              <label for="plate">Plate / Asset ID *</label>
-              <input id="plate" required placeholder="e.g. ABC-1234" />
-            </div>
-
-            <div>
-              <label for="driver">Driver Name</label>
-              <input id="driver" placeholder="e.g. Ahmed Ali" />
-            </div>
-
-            <div>
-              <label for="iqama">Iqama Number</label>
-              <input id="iqama" placeholder="e.g. 1234567890" />
-            </div>
-
-            <div>
-              <label for="license">License Number</label>
-              <input id="license" placeholder="e.g. LJ-998822" />
-            </div>
-
-            <div>
-              <label for="inspectionDate">Inspection Date</label>
-              <input id="inspectionDate" type="date" />
-            </div>
-
-            <div>
-              <label for="expiryDate">Inspection Expiry Date</label>
-              <input id="expiryDate" type="date" />
-            </div>
-
-            <div>
-              <label for="medicalExpiryDate">Medical Fitness Expiry Date</label>
-              <input id="medicalExpiryDate" type="date" />
-            </div>
-
-            <div>
-              <label for="serviceDate">Last Service Date</label>
-              <input id="serviceDate" type="date" />
-            </div>
-
-            <div>
-              <label for="nextServiceDate">Next Service Date</label>
-              <input id="nextServiceDate" type="date" />
-            </div>
-
-            <div class="full">
-              <label for="image">Vehicle Photo</label>
-              <input id="image" type="file" accept="image/*" />
-            </div>
-
-            <div class="full">
-              <label for="docs">Third-Party Documents (PDF/Image)</label>
-              <input id="docs" type="file" multiple accept="image/*,.pdf" />
-            </div>
-
-            <div class="full" style="margin-top: 4px; display: flex; gap: 8px; justify-content: flex-end;">
-              <button type="reset" class="btn btn-ghost">Clear</button>
-              <button type="submit" class="btn btn-primary">
-                ➕ Add Vehicle
-              </button>
-            </div>
-          </form>
-        </div>
+        <table>
+          <thead>
+            <tr>
+              <th>Photo</th>
+              <th>Name</th>
+              <th>Driver</th>
+              <th>Plate</th>
+              <th>Next Service</th>
+            </tr>
+          </thead>
+          <tbody id="vehicleTableBody"></tbody>
+        </table>
       </div>
 
-      <!-- Right: Details -->
-      <div>
-        <div class="card" id="detailsCard">
-          <div class="details-header">
-            <div>
-              <div class="section-title" id="detailsTitle">No vehicle selected</div>
-              <div class="muted" id="detailsSubtitle">Select a vehicle from the list to view details.</div>
-            </div>
-            <div style="display:flex; align-items:center; gap:8px;">
-              <span class="tag" id="detailsTag">–</span>
-              <button class="btn btn-ghost" style="font-size:0.75rem; color:#b91c1c;" onclick="deleteVehicle()">Delete</button>
-              <button class="btn btn-primary" style="font-size:0.75rem;" onclick="printDetails()">Print</button>
-            </div>
-          </div>
+      <div class="card">
+        <h3>Add New Vehicle</h3>
 
-          <div class="details-body" id="detailsBody" style="display:none;">
-            <div>
-              <img id="detailsImage" class="vehicle-image" alt="Vehicle photo" />
-              <div class="placeholder-image" id="detailsImagePlaceholder" style="display:none;">
-                No photo uploaded
-              </div>
-            </div>
+        <form id="vehicleForm">
+          <label>Name *</label><input id="name" required>
+          <label>Plate *</label><input id="plate" required>
+          <label>Driver</label><input id="driver">
+          <label>Iqama</label><input id="iqama">
+          <label>License</label><input id="license">
+          <label>Inspection Date</label><input id="inspectionDate" type="date">
+          <label>Inspection Expiry Date</label><input id="expiryDate" type="date">
+          <label>Medical Fitness Expiry Date</label><input id="medicalExpiryDate" type="date">
+          <label>Last Service Date</label><input id="serviceDate" type="date">
+          <label>Next Service Date</label><input id="nextServiceDate" type="date">
+          <label>Photo</label><input id="image" type="file" accept="image/*">
+          <label>Documents</label><input id="docs" type="file" multiple>
 
-            <div class="detail-grid">
-              <div class="detail-item">
-                <span class="detail-label">Driver</span>
-                <span class="detail-value" id="detailsDriver">–</span>
-              </div>
-              <div class="detail-item">
-                <span class="detail-label">Plate / Asset ID</span>
-                <span class="detail-value" id="detailsPlate">–</span>
-              </div>
-              <div class="detail-item">
-                <span class="detail-label">Iqama Number</span>
-                <span class="detail-value" id="detailsIqama">–</span>
-              </div>
-              <div class="detail-item">
-                <span class="detail-label">License Number</span>
-                <span class="detail-value" id="detailsLicense">–</span>
-              </div>
-              <div class="detail-item">
-                <span class="detail-label">Inspection Date</span>
-                <span class="detail-value" id="detailsInspection">–</span>
-              </div>
-              <div class="detail-item">
-                <span class="detail-label">Inspection Expiry Date</span>
-                <span class="detail-value" id="detailsExpiry">–</span>
-              </div>
-              <div class="detail-item">
-                <span class="detail-label">Medical Fitness Expiry Date</span>
-                <span class="detail-value" id="detailsMedicalExpiry">–</span>
-              </div>
-              <div class="detail-item">
-                <span class="detail-label">Last Service</span>
-                <span class="detail-value" id="detailsService">–</span>
-              </div>
-              <div class="detail-item">
-                <span class="detail-label">Next Service</span>
-                <span class="detail-value" id="detailsNextService">–</span>
-              </div>
-            </div>
-          </div>
+          <button class="btn btn-primary" style="margin-top:10px;">Add Vehicle</button>
+        </form>
 
-          <div class="section-title" style="margin-top:12px;">Documents</div>
-          <ul id="detailsDocs" class="muted" style="padding-left:18px; margin-top:4px;"></ul>
-        </div>
-
-        <p class="muted">
-          All data is stored in an online database (Firebase Firestore). You can open this dashboard from any device using the same link and see the same equipment list.
-        </p>
       </div>
     </div>
-  </d  <script type="module">
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-app.js";
-    import { getFirestore, collection, getDocs, addDoc, deleteDoc, doc, updateDoc } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-firestore.js";
 
-    const firebaseConfig = {
-      apiKey: "AIzaSyAwAMnqkJz9uifaaKETPTyFkIzhPfjQfEs",
-      authDomain: "samyoung-equipment.firebaseapp.com",
-      projectId: "samyoung-equipment",
-      storageBucket: "samyoung-equipment.firebasestorage.app",
-      messagingSenderId: "1085341907778",
-      appId: "1:1085341907778:web:0d7172ab61bcfbaf52a6db",
-      measurementId: "G-DZ095FKLSS"
+    <!-- RIGHT SIDE -->
+    <div>
+      <div class="card" id="detailsCard">
+        <h3 id="detailsTitle">No vehicle selected</h3>
+        <p id="detailsSubtitle">Select a vehicle from the list</p>
+
+        <button onclick="deleteVehicle()" class="btn btn-ghost">Delete</button>
+        <button onclick="printDetails()" class="btn btn-primary">Print</button>
+
+        <div id="detailsBody" style="display:none;">
+
+          <img id="detailsImage" class="vehicle-image">
+
+          <div class="detail-grid">
+            <div><strong>Driver:</strong> <span id="detailsDriver"></span></div>
+            <div><strong>Plate:</strong> <span id="detailsPlate"></span></div>
+            <div><strong>Iqama:</strong> <span id="detailsIqama"></span></div>
+            <div><strong>License:</strong> <span id="detailsLicense"></span></div>
+            <div><strong>Inspection:</strong> <span id="detailsInspection"></span></div>
+            <div><strong>Inspection Expiry:</strong> <span id="detailsExpiry"></span></div>
+            <div><strong>Medical Fitness Expiry:</strong> <span id="detailsMedicalExpiry"></span></div>
+            <div><strong>Last Service:</strong> <span id="detailsService"></span></div>
+            <div><strong>Next Service:</strong> <span id="detailsNextService"></span></div>
+          </div>
+
+          <h4>Documents</h4>
+          <ul id="detailsDocs"></ul>
+
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- FIREBASE MODULE SCRIPT -->
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-app.js";
+import { getFirestore, collection, getDocs, addDoc, deleteDoc, doc } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-firestore.js";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyAwAMnqkJz9uifaaKETPTyFkIzhPfjQfEs",
+  authDomain: "samyoung-equipment.firebaseapp.com",
+  projectId: "samyoung-equipment",
+  storageBucket: "samyoung-equipment.firebasestorage.app",
+  messagingSenderId: "1085341907778",
+  appId: "1:1085341907778:web:0d7172ab61bcfbaf52a6db",
+  measurementId: "G-DZ095FKLSS"
+};
+
+const app = initializeApp(firebaseConfig);
+const db = getFirestore(app);
+const vehiclesCol = collection(db, "vehicles");
+
+async function dbLoadVehicles() {
+  const snap = await getDocs(vehiclesCol);
+  return snap.docs.map(d => ({ id: d.id, ...d.data() }));
+}
+
+async function dbAddVehicle(data) {
+  const ref = await addDoc(vehiclesCol, data);
+  return { ...data, id: ref.id };
+}
+
+async function dbDeleteVehicle(id) {
+  await deleteDoc(doc(vehiclesCol, id));
+}
+
+window.dbApi = { dbLoadVehicles, dbAddVehicle, dbDeleteVehicle };
+</script>
+
+<!-- MAIN APP LOGIC -->
+<script>
+let vehicles = [];
+let currentVehicleId = null;
+
+function attemptLogin(){
+  if (loginUser.value === "samyoung" && loginPass.value === "FGIP-4") {
+    loginScreen.style.display = "none";
+    mainApp.style.display = "block";
+  } else {
+    loginError.style.display = "block";
+  }
+}
+
+function renderStats() {
+  document.getElementById("totalVehicles").textContent = vehicles.length;
+  document.getElementById("needsService").textContent =
+    vehicles.filter(v => v.nextServiceDate).length;
+}
+
+function renderList() {
+  const tbody = document.getElementById("vehicleTableBody");
+  tbody.innerHTML = "";
+
+  vehicles.forEach(v => {
+    const tr = document.createElement("tr");
+    tr.dataset.id = v.id;
+
+    const photoHtml = v.imageDataUrl
+      ? `<img src="${v.imageDataUrl}" class="thumb">`
+      : "—";
+
+    tr.innerHTML = `
+      <td>${photoHtml}</td>
+      <td>${v.name || "—"}</td>
+      <td>${v.driver || "—"}</td>
+      <td>${v.plate || "—"}</td>
+      <td>${v.nextServiceDate || "—"}</td>
+    `;
+
+    tr.onclick = () => showDetails(v.id);
+    tbody.appendChild(tr);
+  });
+}
+
+function showDetails(id) {
+  const v = vehicles.find(x => x.id === id);
+  if (!v) return;
+
+  currentVehicleId = id;
+
+  detailsTitle.textContent = v.name;
+  detailsDriver.textContent = v.driver || "—";
+  detailsPlate.textContent = v.plate || "—";
+  detailsIqama.textContent = v.iqama || "—";
+  detailsLicense.textContent = v.license || "—";
+  detailsInspection.textContent = v.inspectionDate || "—";
+  detailsExpiry.textContent = v.expiryDate || "—";
+  detailsMedicalExpiry.textContent = v.medicalExpiryDate || "—";
+  detailsService.textContent = v.serviceDate || "—";
+  detailsNextService.textContent = v.nextServiceDate || "—";
+
+  if (v.imageDataUrl) {
+    detailsImage.src = v.imageDataUrl;
+    detailsImage.style.display = "block";
+  }
+
+  const docsList = document.getElementById("detailsDocs");
+  docsList.innerHTML = "";
+  if (v.docs && v.docs.length) {
+    v.docs.forEach(d => {
+      const li = document.createElement("li");
+      li.innerHTML = `<a href="${d.dataUrl}" target="_blank">${d.name}</a>`;
+      docsList.appendChild(li);
+    });
+  }
+
+  detailsBody.style.display = "block";
+}
+
+function deleteVehicle() {
+  if (!currentVehicleId) return;
+
+  const v = vehicles.find(x => x.id === currentVehicleId);
+  if (!confirm("Delete " + v.name + "?")) return;
+
+  window.dbApi.dbDeleteVehicle(currentVehicleId).then(() => {
+    vehicles = vehicles.filter(x => x.id !== currentVehicleId);
+    renderList();
+    renderStats();
+    detailsBody.style.display = "none";
+    detailsTitle.textContent = "No vehicle selected";
+  });
+}
+
+function handleFormSubmit(e){
+  e.preventDefault();
+
+  const name = document.getElementById("name").value;
+  const plate = document.getElementById("plate").value;
+  const driver = document.getElementById("driver").value;
+  const iqama = document.getElementById("iqama").value;
+  const license = document.getElementById("license").value;
+  const inspectionDate = inspectionDate.value;
+  const expiryDate = expiryDate.value;
+  const medicalExpiryDate = medicalExpiryDate.value;
+  const serviceDate = serviceDate.value;
+  const nextServiceDate = nextServiceDate.value;
+
+  const imageFile = image.files[0];
+  const docsFiles = docs.files;
+
+  function finishAdd(imageDataUrl, docsArr) {
+    const data = {
+      name, plate, driver, iqama, license,
+      inspectionDate, expiryDate, medicalExpiryDate,
+      serviceDate, nextServiceDate,
+      imageDataUrl, docs: docsArr
     };
 
-    const app = initializeApp(firebaseConfig);
-    const db = getFirestore(app);
-
-    const vehiclesCol = collection(db, "vehicles");
-
-    async function dbLoadVehicles() {
-      const snap = await getDocs(vehiclesCol);
-      return snap.docs.map(d => ({ id: d.id, ...d.data() }));
-    }
-
-    async function dbAddVehicle(data) {
-      const ref = await addDoc(vehiclesCol, data);
-      return { ...data, id: ref.id };
-    }
-
-    async function dbDeleteVehicle(id) {
-      await deleteDoc(doc(vehiclesCol, id));
-    }
-
-    async function dbUpdateVehicle(id, data) {
-      await updateDoc(doc(vehiclesCol, id), data);
-    }
-
-    window.dbApi = { dbLoadVehicles, dbAddVehicle, dbDeleteVehicle, dbUpdateVehicle };
-  </script>
-
-iv>
-
-  <script>
-    const STORAGE_KEY = "equipmentVehicleData_v1";
-    let vehicles = [];
-    let currentVehicleId = null;
-
-    function loadVehicles() {
-      try {
-        const raw = localStorage.getItem(STORAGE_KEY);
-        if (!raw) return [];
-        const parsed = JSON.parse(raw);
-        if (Array.isArray(parsed)) return parsed;
-        return [];
-      } catch (e) {
-        console.error("Error reading from localStorage", e);
-        return [];
-      }
-    }
-
-    function saveVehicles() {
-      try {
-        localStorage.setItem(STORAGE_KEY, JSON.stringify(vehicles));
-      } catch (e) {
-        console.error("Error saving to localStorage", e);
-        document.getElementById("storageStatus").textContent = "Storage error";
-      }
-    }
-
-    function formatDate(value) {
-      if (!value) return "–";
-      const d = new Date(value);
-      if (isNaN(d)) return value;
-      return d.toLocaleDateString();
-    }
-
-    function isUpcoming(dateStr) {
-      if (!dateStr) return false;
-      const today = new Date();
-      const target = new Date(dateStr);
-      if (isNaN(target)) return false;
-      const diff = target - today;
-      const days = diff / (1000 * 60 * 60 * 24);
-      return days <= 30;
-    }
-
-    function checkInspectionAlerts() {
-      const bar = document.getElementById("notificationBar");
-      const textEl = document.getElementById("notificationText");
-      if (!bar || !textEl) return;
-
-      const today = new Date();
-      const msPerDay = 1000 * 60 * 60 * 24;
-
-      const alertVehicles = vehicles.filter(function (v) {
-        if (!v.inspectionDate) return false;
-        const d = new Date(v.inspectionDate);
-        if (isNaN(d)) return false;
-        const diffDays = Math.floor((d - today) / msPerDay);
-        return diffDays <= 7; // due within 7 days or overdue
-      });
-
-      if (alertVehicles.length === 0) {
-        bar.style.display = "none";
-        return;
-      }
-
-      const names = alertVehicles.slice(0, 3).map(function (v) {
-        return v.name || v.plate || "Vehicle";
-      });
-
-      const extra =
-        alertVehicles.length > 3
-          ? " and " + (alertVehicles.length - 3) + " more"
-          : "";
-
-      const message =
-        alertVehicles.length +
-        " vehicle(s) need inspection soon: " +
-        names.join(", ") +
-        extra +
-        ".";
-
-      textEl.textContent = message;
-      bar.style.display = "flex";
-    }
-
-    function dismissNotification() {
-      const bar = document.getElementById("notificationBar");
-      if (bar) bar.style.display = "none";
-    }
-
-    function renderStats() {
-      const total = vehicles.length;
-      document.getElementById("totalVehicles").textContent = total;
-
-      const upcoming = vehicles.filter(function (v) {
-        return isUpcoming(v.nextServiceDate);
-      }).length;
-
-      document.getElementById("needsService").textContent = upcoming;
-
-      checkInspectionAlerts();
-    }
-
-    function renderList() {
-      const tbody = document.getElementById("vehicleTableBody");
-      tbody.innerHTML = "";
-
-      if (vehicles.length === 0) {
-        const tr = document.createElement("tr");
-        const td = document.createElement("td");
-        td.colSpan = 5;
-        td.className = "muted";
-        td.textContent = "No vehicles yet. Add one using the form below.";
-        tr.appendChild(td);
-        tbody.appendChild(tr);
-        return;
-      }
-
-      vehicles.forEach(function (v) {
-        const tr = document.createElement("tr");
-        tr.dataset.id = v.id;
-
-        var photoHtml = v.imageDataUrl
-          ? '<img src="' + v.imageDataUrl + '" class="thumb" alt="Photo" />'
-          : '—';
-
-        tr.innerHTML =
-          "<td>" + photoHtml + "</td>" +
-          "<td>" + (v.name || "–") + "</td>" +
-          "<td>" + (v.driver || "–") + "</td>" +
-          "<td>" + (v.plate || "–") + "</td>" +
-          "<td>" + (v.nextServiceDate ? formatDate(v.nextServiceDate) : "–") + "</td>";
-
-        tr.addEventListener("click", function () {
-          showDetails(v.id);
-        });
-
-        tbody.appendChild(tr);
-      });
-    }
-
-    function showDetails(id) {
-      const vehicle = vehicles.find(function (v) {
-        return v.id === id;
-      });
-      if (!vehicle) return;
-
-      currentVehicleId = vehicle.id;
-
-      document.getElementById("detailsTitle").textContent =
-        vehicle.name || "Unnamed vehicle";
-
-      document.getElementById("detailsSubtitle").textContent =
-        vehicle.driver ? "Driver: " + vehicle.driver : "No driver set";
-
-      const tagEl = document.getElementById("detailsTag");
-      if (vehicle.nextServiceDate) {
-        if (isUpcoming(vehicle.nextServiceDate)) {
-          tagEl.textContent = "Service soon";
-        } else {
-          tagEl.textContent = "Service scheduled";
-        }
-      } else {
-        tagEl.textContent = "No service date";
-      }
-
-      const imgEl = document.getElementById("detailsImage");
-      const placeholder = document.getElementById("detailsImagePlaceholder");
-
-      if (vehicle.imageDataUrl) {
-        imgEl.src = vehicle.imageDataUrl;
-        imgEl.style.display = "block";
-        placeholder.style.display = "none";
-      } else {
-        imgEl.style.display = "none";
-        placeholder.style.display = "flex";
-      }
-
-      document.getElementById("detailsDriver").textContent =
-        vehicle.driver || "–";
-      document.getElementById("detailsPlate").textContent =
-        vehicle.plate || "–";
-      document.getElementById("detailsIqama").textContent =
-        vehicle.iqama || "–";
-      document.getElementById("detailsLicense").textContent =
-        vehicle.license || "–";
-      document.getElementById("detailsInspection").textContent =
-        formatDate(vehicle.inspectionDate);
-      document.getElementById("detailsExpiry").textContent =
-        formatDate(vehicle.expiryDate);
-      document.getElementById("detailsMedicalExpiry").textContent =
-        formatDate(vehicle.medicalExpiryDate);
-      document.getElementById("detailsService").textContent =
-        formatDate(vehicle.serviceDate);
-      document.getElementById("detailsNextService").textContent =
-        formatDate(vehicle.nextServiceDate);
-
-      const docsList = document.getElementById("detailsDocs");
-      if (docsList) {
-        docsList.innerHTML = "";
-        if (vehicle.docs && vehicle.docs.length) {
-          vehicle.docs.forEach(function (doc) {
-            const li = document.createElement("li");
-            const a = document.createElement("a");
-            a.href = doc.dataUrl;
-            a.textContent = doc.name || "Document";
-            a.target = "_blank";
-            li.appendChild(a);
-            docsList.appendChild(li);
-          });
-        } else {
-          const li = document.createElement("li");
-          li.textContent = "No documents uploaded";
-          docsList.appendChild(li);
-        }
-      }
-
-      document.getElementById("detailsBody").style.display = "grid";
-    }
-
-    function createId() {
-      return "v_" + Date.now() + "_" + Math.random().toString(16).slice(2);
-    }
-
-    function readFilesAsDataUrls(files, callback) {
-      const arr = Array.from(files || []);
-      if (!arr.length) {
-        callback([]);
-        return;
-      }
-      let remaining = arr.length;
-      const results = [];
-      arr.forEach(function (file) {
-        const reader = new FileReader();
-        reader.onload = function (e) {
-          results.push({
-            name: file.name,
-            type: file.type,
-            dataUrl: e.target.result,
-          });
-          remaining--;
-          if (!remaining) callback(results);
-        };
-        reader.readAsDataURL(file);
-      });
-    }
-
-    function handleFormSubmit(event) {
-      event.preventDefault();
-
-      const name = document.getElementById("name").value.trim();
-      const plate = document.getElementById("plate").value.trim();
-      const driver = document.getElementById("driver").value.trim();
-      const iqama = document.getElementById("iqama").value.trim();
-      const license = document.getElementById("license").value.trim();
-      const inspectionDate = document.getElementById("inspectionDate").value;
-      const expiryDate = document.getElementById("expiryDate").value;
-      const medicalExpiryDate = document.getElementById("medicalExpiryDate").value;
-      const serviceDate = document.getElementById("serviceDate").value;
-      const nextServiceDate = document.getElementById("nextServiceDate").value;
-      const imageInput = document.getElementById("image");
-      const file = imageInput.files[0];
-      const docsInput = document.getElementById("docs");
-      const docsFiles = docsInput ? docsInput.files : [];
-
-      if (!name || !plate) {
-        alert("Please enter at least Name and Plate / Asset ID.");
-        return;
-      }
-
-      function addVehicle(imageDataUrl, docsArray) {
-        const newVehicleData = {
-          name: name,
-          plate: plate,
-          driver: driver,
-          iqama: iqama,
-          license: license,
-          inspectionDate: inspectionDate,
-          expiryDate: expiryDate,
-          medicalExpiryDate: medicalExpiryDate,
-          serviceDate: serviceDate,
-          nextServiceDate: nextServiceDate,
-          imageDataUrl: imageDataUrl || null,
-          docs: docsArray || [],
-        };
-
-        if (window.dbApi && window.dbApi.dbAddVehicle) {
-          window.dbApi
-            .dbAddVehicle(newVehicleData)
-            .then(function (saved) {
-              vehicles.push(saved);
-              renderStats();
-              renderList();
-              showDetails(saved.id);
-            })
-            .catch(function (err) {
-              console.error("Error saving vehicle to Firestore", err);
-              alert("Could not save to online database. Please try again.");
-            });
-        } else {
-          // Fallback: keep local only if dbApi not ready
-          const localVehicle = Object.assign({ id: createId() }, newVehicleData);
-          vehicles.push(localVehicle);
-          renderStats();
-          renderList();
-          showDetails(localVehicle.id);
-        }
-
-        event.target.reset();
-        imageInput.value = "";
-        if (docsInput) docsInput.value = "";
-      }
-
-      function processAndAdd(imageDataUrl) {
-        if (docsFiles && docsFiles.length) {
-          readFilesAsDataUrls(docsFiles, function (docs) {
-            addVehicle(imageDataUrl, docs);
-          });
-        } else {
-          addVehicle(imageDataUrl, []);
-        }
-      }
-
-      if (file) {
-        const reader = new FileReader();
-        reader.onload = function (e) {
-          processAndAdd(e.target.result);
-        };
-        reader.readAsDataURL(file);
-      } else {
-        processAndAdd(null);
-      }
-    }
-
-    function deleteVehicle() {
-      if (!currentVehicleId) return;
-      const vehicle = vehicles.find(function (v) {
-        return v.id === currentVehicleId;
-      });
-      const name = vehicle
-        ? (vehicle.name || vehicle.plate || "this vehicle")
-        : "this vehicle";
-
-      if (!confirm("Delete " + name + "? This cannot be undone.")) return;
-
-      function finishLocalDelete() {
-        vehicles = vehicles.filter(function (v) {
-          return v.id !== currentVehicleId;
-        });
-        renderStats();
-        renderList();
-        checkInspectionAlerts();
-
-        currentVehicleId = null;
-        const body = document.getElementById("detailsBody");
-        document.getElementById("detailsTitle").textContent = "No vehicle selected";
-        document.getElementById("detailsSubtitle").textContent =
-          "Select a vehicle from the list to view details.";
-        document.getElementById("detailsTag").textContent = "–";
-        if (body) body.style.display = "none";
-      }
-
-      if (window.dbApi && window.dbApi.dbDeleteVehicle && currentVehicleId) {
-        window.dbApi
-          .dbDeleteVehicle(currentVehicleId)
-          .then(function () {
-            finishLocalDelete();
-          })
-          .catch(function (err) {
-            console.error("Error deleting from Firestore", err);
-            alert("Could not delete from online database. Please try again.");
-          });
-      } else {
-        finishLocalDelete();
-      }
-    }
-
-    function printDetails() {
-      // Uses CSS @media print to only print the details card
-      window.print();
-    }
-
-    function attemptLogin() {
-      const u = document.getElementById("loginUser").value;
-      const p = document.getElementById("loginPass").value;
-
-      if (u === "samyoung" && p === "FGIP-4") {
-        document.getElementById("loginScreen").style.display = "none";
-        document.getElementById("mainApp").style.display = "block";
-      } else {
-        document.getElementById("loginError").style.display = "block";
-      }
-    }
-
-    document.addEventListener("DOMContentLoaded", function () {
-      const form = document.getElementById("vehicleForm");
-      form.addEventListener("submit", handleFormSubmit);
-
-      if (window.dbApi && window.dbApi.dbLoadVehicles) {
-        window.dbApi.dbLoadVehicles().then(function (items) {
-          vehicles = items || [];
-          renderStats();
-          renderList();
-          checkInspectionAlerts();
-          if (vehicles.length > 0) {
-            showDetails(vehicles[0].id);
-          }
-        }).catch(function (err) {
-          console.error("Error loading vehicles from Firestore", err);
-          vehicles = [];
-          renderStats();
-          renderList();
-        });
-      } else {
-        console.warn("dbApi not ready, starting with empty list");
-        vehicles = [];
-        renderStats();
-        renderList();
-      }
+    window.dbApi.dbAddVehicle(data).then(saved => {
+      vehicles.push(saved);
+      renderList();
+      renderStats();
+      showDetails(saved.id);
     });
-  </script>
+
+    e.target.reset();
+  }
+
+  function readFiles(files, callback) {
+    const arr = [];
+    let remaining = files.length;
+    if (!remaining) return callback([]);
+
+    for (const f of files) {
+      const r = new FileReader();
+      r.onload = () => {
+        arr.push({ name: f.name, dataUrl: r.result });
+        if (--remaining === 0) callback(arr);
+      };
+      r.readAsDataURL(f);
+    }
+  }
+
+  if (imageFile) {
+    const reader = new FileReader();
+    reader.onload = (ev) => {
+      readFiles(docsFiles, (docsArr) => {
+        finishAdd(ev.target.result, docsArr);
+      });
+    };
+    reader.readAsDataURL(imageFile);
+  } else {
+    readFiles(docsFiles, (docsArr) => {
+      finishAdd(null, docsArr);
+    });
+  }
+}
+
+document.getElementById("vehicleForm").onsubmit = handleFormSubmit;
+
+document.addEventListener("DOMContentLoaded", () => {
+  window.dbApi.dbLoadVehicles().then(list => {
+    vehicles = list;
+    renderStats();
+    renderList();
+  });
+});
+</script>
+
 </body>
 </html>
 
