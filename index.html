@@ -235,7 +235,7 @@
       </div>
 
       <div class="card">
-        <h3>Add New Vehicle</h3>
+        <h3 id="vehicleFormTitle">Add New Vehicle</h3>
 
         <form id="vehicleForm">
           <label>Driver Name *</label>
@@ -274,7 +274,7 @@
           <label>Documents (PDF / images, multiple)</label>
           <input id="docs" type="file" multiple>
 
-          <button class="btn btn-primary" style="margin-top:10px;">Add Vehicle</button>
+          <button id="submitBtn" class="btn btn-primary" style="margin-top:10px;">Add Vehicle</button>
         </form>
       </div>
     </div>
@@ -285,8 +285,11 @@
         <h3 id="detailsTitle">No vehicle selected</h3>
         <p id="detailsSubtitle">Select a vehicle to view details</p>
 
-        <button class="btn btn-ghost" onclick="deleteVehicle()">Delete</button>
-        <button class="btn btn-primary" onclick="window.print()">Print</button>
+        <div style="display:flex; gap:8px; margin-bottom:10px;">
+          <button class="btn btn-ghost" type="button" onclick="startEdit()">Edit</button>
+          <button class="btn btn-ghost" type="button" onclick="deleteVehicle()">Delete</button>
+          <button class="btn btn-primary" type="button" onclick="window.print()">Print</button>
+        </div>
 
         <div id="detailsBody" style="margin-top:10px; display:none;">
 
@@ -324,7 +327,7 @@
 <!-- FIREBASE -->
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-app.js";
-import { getFirestore, collection, getDocs, addDoc, deleteDoc, doc }
+import { getFirestore, collection, getDocs, addDoc, deleteDoc, doc, updateDoc }
   from "https://www.gstatic.com/firebasejs/11.0.1/firebase-firestore.js";
 
 const firebaseConfig = {
@@ -355,13 +358,20 @@ async function dbDeleteVehicle(id) {
   await deleteDoc(doc(vehiclesCol, id));
 }
 
-window.dbApi = { dbLoadVehicles, dbAddVehicle, dbDeleteVehicle };
+async function dbUpdateVehicle(id, data) {
+  const ref = doc(vehiclesCol, id);
+  await updateDoc(ref, data);
+}
+
+window.dbApi = { dbLoadVehicles, dbAddVehicle, dbDeleteVehicle, dbUpdateVehicle };
 </script>
 
 <!-- MAIN LOGIC -->
 <script>
 let vehicles = [];
 let currentVehicleId = null;
+let isEditing = false;
+let editingId = null;
 
 /* LOGIN */
 document.getElementById("loginBtn").onclick = function () {
@@ -504,6 +514,35 @@ function showDetails(id) {
   detailsBody.style.display = "block";
 }
 
+/* START EDIT */
+function startEdit() {
+  if (!currentVehicleId) return;
+  const v = vehicles.find(x => x.id === currentVehicleId);
+  if (!v) return;
+
+  isEditing = true;
+  editingId = v.id;
+
+  driverName.value = v.name || "";
+  plate.value = v.plate || "";
+  driver.value = v.driver || "";
+  iqama.value = v.iqama || "";
+  license.value = v.license || "";
+  inspectionDate.value = v.inspectionDate || "";
+  expiryDate.value = v.expiryDate || "";
+  medicalExpiryDate.value = v.medicalExpiryDate || "";
+  serviceDate.value = v.serviceDate || "";
+  nextServiceDate.value = v.nextServiceDate || "";
+
+  image.value = "";
+  docs.value = "";
+
+  vehicleFormTitle.textContent = "Edit Vehicle";
+  submitBtn.textContent = "Save Changes";
+
+  window.scrollTo({ top: 0, behavior: "smooth" });
+}
+
 /* DELETE VEHICLE */
 function deleteVehicle() {
   if (!currentVehicleId) return;
@@ -516,19 +555,26 @@ function deleteVehicle() {
   window.dbApi.dbDeleteVehicle(currentVehicleId).then(() => {
     vehicles = vehicles.filter(v => v.id !== currentVehicleId);
     currentVehicleId = null;
+    isEditing = false;
+    editingId = null;
     renderList();
     renderStats();
     detailsBody.style.display = "none";
     detailsTitle.textContent = "No vehicle selected";
     detailsSubtitle.textContent = "Select a vehicle to view details";
+    vehicleForm.reset();
+    vehicleFormTitle.textContent = "Add New Vehicle";
+    submitBtn.textContent = "Add Vehicle";
   });
 }
 
-/* ADD VEHICLE */
+/* ADD / EDIT VEHICLE */
 vehicleForm.onsubmit = function(e) {
   e.preventDefault();
 
-  const data = {
+  const editing = isEditing && editingId;
+
+  const baseData = {
     name: driverName.value,
     plate: plate.value,
     driver: driver.value,
@@ -538,27 +584,54 @@ vehicleForm.onsubmit = function(e) {
     expiryDate: expiryDate.value,
     medicalExpiryDate: medicalExpiryDate.value,
     serviceDate: serviceDate.value,
-    nextServiceDate: nextServiceDate.value,
-    images: [],
-    docs: []
+    nextServiceDate: nextServiceDate.value
   };
 
   const imageFiles = image.files;
   const docFiles = docs.files;
 
-  function saveFinal() {
-    window.dbApi.dbAddVehicle(data).then(saved => {
-      vehicles.push(saved);
-      renderList();
-      renderStats();
-      showDetails(saved.id);
-    });
-    vehicleForm.reset();
+  let images = [];
+  let docsArr = [];
+
+  const existing = editing ? vehicles.find(v => v.id === editingId) : null;
+
+  function finish() {
+    const finalData = { ...baseData, images, docs: docsArr };
+
+    if (editing) {
+      window.dbApi.dbUpdateVehicle(editingId, finalData).then(() => {
+        const idx = vehicles.findIndex(v => v.id === editingId);
+        if (idx !== -1) {
+          vehicles[idx] = { ...vehicles[idx], ...finalData };
+        }
+        renderList();
+        renderStats();
+        showDetails(editingId);
+        isEditing = false;
+        editingId = null;
+        vehicleForm.reset();
+        vehicleFormTitle.textContent = "Add New Vehicle";
+        submitBtn.textContent = "Add Vehicle";
+      });
+    } else {
+      window.dbApi.dbAddVehicle(finalData).then(saved => {
+        vehicles.push(saved);
+        renderList();
+        renderStats();
+        showDetails(saved.id);
+        vehicleForm.reset();
+      });
+    }
   }
 
   function readDocs(done) {
     let out = [];
-    if (!docFiles.length) return done(out);
+    if (!docFiles.length) {
+      if (editing && existing && existing.docs) {
+        out = existing.docs;
+      }
+      return done(out);
+    }
 
     let remaining = docFiles.length;
     for (const file of docFiles) {
@@ -573,7 +646,12 @@ vehicleForm.onsubmit = function(e) {
 
   function readImages(done) {
     let out = [];
-    if (!imageFiles.length) return done(out);
+    if (!imageFiles.length) {
+      if (editing && existing && existing.images) {
+        out = existing.images;
+      }
+      return done(out);
+    }
 
     let remaining = imageFiles.length;
     for (const file of imageFiles) {
@@ -586,12 +664,11 @@ vehicleForm.onsubmit = function(e) {
     }
   }
 
-  readImages(imagesArr => {
-    data.images = imagesArr;
-
+  readImages(imgArr => {
+    images = imgArr;
     readDocs(docArr => {
-      data.docs = docArr;
-      saveFinal();
+      docsArr = docArr;
+      finish();
     });
   });
 };
