@@ -51,7 +51,7 @@
     <label>Password</label>
     <input id="loginPass" type="password" style="width:100%; margin-bottom:10px;">
 
-    <button type="button" class="btn btn-primary" id="loginBtn" style="width:100%;">Login</button>
+    <button class="btn btn-primary" onclick="attemptLogin()" style="width:100%;">Login</button>
 
     <p id="loginError" style="color:red; text-align:center; display:none;">Invalid login</p>
   </div>
@@ -71,8 +71,7 @@
   </div>
 
   <div class="layout">
-
-    <!-- LEFT COLUMN -->
+    <!-- LEFT -->
     <div>
       <div class="card">
         <h3>Vehicle List</h3>
@@ -113,7 +112,7 @@
       </div>
     </div>
 
-    <!-- RIGHT COLUMN -->
+    <!-- RIGHT -->
     <div>
       <div class="card" id="detailsCard">
         <h3 id="detailsTitle">No vehicle selected</h3>
@@ -146,7 +145,7 @@
   </div>
 </div>
 
-<!-- FIREBASE MODULE SCRIPT -->
+<!-- FIREBASE SCRIPT -->
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-app.js";
 import { getFirestore, collection, getDocs, addDoc, deleteDoc, doc } 
@@ -188,7 +187,6 @@ window.dbApi = { dbLoadVehicles, dbAddVehicle, dbDeleteVehicle };
 let vehicles = [];
 let currentVehicleId = null;
 
-/* ---------------------- LOGIN --------------------- */
 function attemptLogin() {
   if (loginUser.value === "samyoung" && loginPass.value === "FGIP-4") {
     loginScreen.style.display = "none";
@@ -197,9 +195,7 @@ function attemptLogin() {
     loginError.style.display = "block";
   }
 }
-document.getElementById("loginBtn").onclick = attemptLogin;
 
-/* ---------------------- RENDER --------------------- */
 function renderStats() {
   totalVehicles.textContent = vehicles.length;
   needsService.textContent = vehicles.filter(v => v.nextServiceDate).length;
@@ -219,12 +215,12 @@ function renderList() {
       <td>${v.plate}</td>
       <td>${v.nextServiceDate || "—"}</td>
     `;
+
     tr.onclick = () => showDetails(v.id);
     vehicleTableBody.appendChild(tr);
   });
 }
 
-/* ---------------------- DETAILS --------------------- */
 function showDetails(id) {
   const v = vehicles.find(x => x.id === id);
   if (!v) return;
@@ -256,7 +252,6 @@ function showDetails(id) {
   detailsBody.style.display = "block";
 }
 
-/* ---------------------- DELETE --------------------- */
 function deleteVehicle() {
   if (!currentVehicleId) return;
 
@@ -272,7 +267,6 @@ function deleteVehicle() {
   });
 }
 
-/* ---------------------- ADD VEHICLE --------------------- */
 function handleFormSubmit(e) {
   e.preventDefault();
 
@@ -339,7 +333,6 @@ function handleFormSubmit(e) {
 
 vehicleForm.onsubmit = handleFormSubmit;
 
-/* ---------------------- LOAD DATA --------------------- */
 document.addEventListener("DOMContentLoaded", () => {
   window.dbApi.dbLoadVehicles().then(list => {
     vehicles = list;
@@ -351,5 +344,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
 </body>
 </html>
+
+
 
 
