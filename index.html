@@ -99,6 +99,7 @@
       display: grid;
       grid-template-columns: 1fr 1fr;
       gap: 16px;
+      margin-bottom: 20px;
     }
 
     .stat-card {
@@ -146,16 +147,29 @@
 
     .vehicle-image {
       width: 100%;
-      height: 220px;
+      max-height: 220px;
       object-fit: cover;
       background: #EEE;
       border-radius: 10px;
+      margin-bottom: 8px;
     }
 
     .detail-grid {
       display: grid;
       grid-template-columns: repeat(2,1fr);
       gap: 8px;
+    }
+
+    #nextInspectionSummary {
+      font-size: 0.95rem;
+      margin-top: 4px;
+      font-weight: 600;
+    }
+
+    #nextInspectionList {
+      font-size: 0.8rem;
+      margin-top: 6px;
+      color: #4B5563;
     }
   </style>
 </head>
@@ -186,6 +200,20 @@
     <h1><img src="assets/logo.png" alt="Logo">SAMYOUNG FGIP -4</h1>
     <span style="opacity:0.7;">Using Online Database (Firestore)</span>
   </header>
+
+  <!-- DASHBOARD STATS -->
+  <div class="stats">
+    <div class="stat-card">
+      <div>Total Vehicles</div>
+      <div id="totalVehicles" style="font-size:1.6rem; font-weight:700;">0</div>
+    </div>
+
+    <div class="stat-card">
+      <div>Closest Inspection</div>
+      <div id="nextInspectionSummary">No inspection dates set</div>
+      <div id="nextInspectionList"></div>
+    </div>
+  </div>
 
   <div class="layout">
     <!-- LEFT SIDE -->
@@ -240,10 +268,10 @@
           <label>Next Service Date</label>
           <input id="nextServiceDate" type="date">
 
-          <label>Photo</label>
-          <input id="image" type="file" accept="image/*">
+          <label>Photos (you can select 3–4)</label>
+          <input id="image" type="file" accept="image/*" multiple>
 
-          <label>Documents</label>
+          <label>Documents (PDF / images, multiple)</label>
           <input id="docs" type="file" multiple>
 
           <button class="btn btn-primary" style="margin-top:10px;">Add Vehicle</button>
@@ -262,12 +290,13 @@
 
         <div id="detailsBody" style="margin-top:10px; display:none;">
 
-          <img id="detailsImage" class="vehicle-image">
+          <!-- MULTIPLE IMAGES -->
+          <div id="detailsImages"></div>
 
           <div class="detail-grid">
 
             <div><strong>Vehicle / Equipment:</strong> <span id="detailsDriver"></span></div>
-            <div><strong>Driver Name:</strong> <span id="detailsTitle"></span></div>
+            <div><strong>Driver Name:</strong> <span id="detailsDriverName"></span></div>
 
             <div><strong>Plate:</strong> <span id="detailsPlate"></span></div>
             <div><strong>Iqama:</strong> <span id="detailsIqama"></span></div>
@@ -349,17 +378,59 @@ document.addEventListener("DOMContentLoaded", () => {
   window.dbApi.dbLoadVehicles().then(list => {
     vehicles = list;
     renderList();
+    renderStats();
   });
 });
+
+/* STATS */
+function renderStats() {
+  const totalEl = document.getElementById('totalVehicles');
+  const summaryEl = document.getElementById('nextInspectionSummary');
+  const listEl = document.getElementById('nextInspectionList');
+
+  if (totalEl) totalEl.textContent = vehicles.length;
+
+  if (!summaryEl || !listEl) return;
+
+  const upcoming = vehicles
+    .filter(v => v.inspectionDate)
+    .map(v => ({
+      ...v,
+      inspectionDateObj: new Date(v.inspectionDate)
+    }))
+    .filter(v => !isNaN(v.inspectionDateObj.getTime()))
+    .sort((a, b) => a.inspectionDateObj - b.inspectionDateObj);
+
+  if (upcoming.length === 0) {
+    summaryEl.textContent = "No inspection dates set";
+    listEl.textContent = "";
+    return;
+  }
+
+  const first = upcoming[0];
+  const dateStr = first.inspectionDate;
+  summaryEl.textContent = `${dateStr} – ${first.name || first.driver || first.plate || "Vehicle"}`;
+
+  const extra = upcoming.slice(1, 3);
+  if (extra.length) {
+    listEl.textContent = extra
+      .map(v => `${v.inspectionDate}: ${v.name || v.driver || v.plate || "Vehicle"}`)
+      .join(" | ");
+  } else {
+    listEl.textContent = "";
+  }
+}
 
 /* RENDER TABLE */
 function renderList() {
   vehicleTableBody.innerHTML = "";
 
   vehicles.forEach(v => {
+    const firstImage = v.images && v.images.length ? v.images[0].dataUrl : null;
+
     const tr = document.createElement("tr");
     tr.innerHTML = `
-      <td>${v.imageDataUrl ? `<img class="thumb" src="${v.imageDataUrl}">` : "—"}</td>
+      <td>${firstImage ? `<img class="thumb" src="${firstImage}">` : "—"}</td>
       <td>${v.name}</td>
       <td>${v.driver || "—"}</td>
       <td>${v.plate}</td>
@@ -373,10 +444,14 @@ function renderList() {
 /* SHOW DETAILS */
 function showDetails(id) {
   const v = vehicles.find(x => x.id === id);
+  if (!v) return;
+
+  currentVehicleId = v.id;
 
   detailsTitle.textContent = v.name;
-  detailsDriver.textContent = v.driver;
-  detailsPlate.textContent = v.plate;
+  detailsDriver.textContent = v.driver || "—";
+  detailsDriverName.textContent = v.name || "—";
+  detailsPlate.textContent = v.plate || "—";
 
   detailsIqama.textContent = v.iqama || "—";
   detailsLicense.textContent = v.license || "—";
@@ -388,15 +463,42 @@ function showDetails(id) {
   detailsService.textContent = v.serviceDate || "—";
   detailsNextService.textContent = v.nextServiceDate || "—";
 
-  detailsImage.src = v.imageDataUrl || "";
+  // IMAGES
+  const imagesContainer = document.getElementById('detailsImages');
+  imagesContainer.innerHTML = "";
+  if (v.images && v.images.length) {
+    v.images.forEach(img => {
+      const a = document.createElement('a');
+      a.href = img.dataUrl;
+      a.target = "_blank";
+      a.download = img.name || "photo";
+      const imageEl = document.createElement('img');
+      imageEl.src = img.dataUrl;
+      imageEl.className = "vehicle-image";
+      a.appendChild(imageEl);
+      imagesContainer.appendChild(a);
+    });
+  } else {
+    imagesContainer.textContent = "No photos uploaded";
+  }
 
+  // DOCUMENTS
   detailsDocs.innerHTML = "";
-  if (v.docs?.length) {
+  if (v.docs && v.docs.length) {
     v.docs.forEach(d => {
       const li = document.createElement("li");
-      li.innerHTML = `<a href="${d.dataUrl}" target="_blank">${d.name}</a>`;
+      const a = document.createElement("a");
+      a.href = d.dataUrl;
+      a.target = "_blank";
+      a.download = d.name || "document";
+      a.textContent = d.name || "Document";
+      li.appendChild(a);
       detailsDocs.appendChild(li);
     });
+  } else {
+    const li = document.createElement("li");
+    li.textContent = "No documents uploaded";
+    detailsDocs.appendChild(li);
   }
 
   detailsBody.style.display = "block";
@@ -405,11 +507,20 @@ function showDetails(id) {
 /* DELETE VEHICLE */
 function deleteVehicle() {
   if (!currentVehicleId) return;
+
+  const v = vehicles.find(x => x.id === currentVehicleId);
+  const label = v ? (v.name || v.driver || v.plate || "this record") : "this record";
+
+  if (!confirm(`Delete ${label}?`)) return;
+
   window.dbApi.dbDeleteVehicle(currentVehicleId).then(() => {
     vehicles = vehicles.filter(v => v.id !== currentVehicleId);
+    currentVehicleId = null;
     renderList();
+    renderStats();
     detailsBody.style.display = "none";
     detailsTitle.textContent = "No vehicle selected";
+    detailsSubtitle.textContent = "Select a vehicle to view details";
   });
 }
 
@@ -428,17 +539,18 @@ vehicleForm.onsubmit = function(e) {
     medicalExpiryDate: medicalExpiryDate.value,
     serviceDate: serviceDate.value,
     nextServiceDate: nextServiceDate.value,
-    imageDataUrl: null,
+    images: [],
     docs: []
   };
 
-  const img = image.files[0];
+  const imageFiles = image.files;
   const docFiles = docs.files;
 
   function saveFinal() {
     window.dbApi.dbAddVehicle(data).then(saved => {
       vehicles.push(saved);
       renderList();
+      renderStats();
       showDetails(saved.id);
     });
     vehicleForm.reset();
@@ -459,23 +571,29 @@ vehicleForm.onsubmit = function(e) {
     }
   }
 
-  function readImage(next) {
-    if (!img) return next(null);
+  function readImages(done) {
+    let out = [];
+    if (!imageFiles.length) return done(out);
 
-    const reader = new FileReader();
-    reader.onload = () => next(reader.result);
-    reader.readAsDataURL(img);
+    let remaining = imageFiles.length;
+    for (const file of imageFiles) {
+      const r = new FileReader();
+      r.onload = () => {
+        out.push({ name: file.name, dataUrl: r.result });
+        if (--remaining === 0) done(out);
+      };
+      r.readAsDataURL(file);
+    }
   }
 
-  readImage(imgUrl => {
-    data.imageDataUrl = imgUrl;
+  readImages(imagesArr => {
+    data.images = imagesArr;
 
     readDocs(docArr => {
       data.docs = docArr;
       saveFinal();
     });
   });
-
 };
 </script>
 
