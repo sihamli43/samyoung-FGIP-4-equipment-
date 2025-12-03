@@ -14,7 +14,7 @@
       color: #0A0E2A;
     }
 
-    /* ----------- LOGIN ----------- */
+    /* Login Page */
     #loginScreen {
       position: fixed;
       inset: 0;
@@ -60,7 +60,7 @@
       border: 1px solid #D62828;
     }
 
-    /* ----------- MAIN LAYOUT ----------- */
+    /* Main Layout */
     .app {
       max-width: 1200px;
       margin: 0 auto;
@@ -136,7 +136,7 @@
       object-fit: cover;
     }
 
-    input, select {
+    input {
       padding: 8px;
       width: 100%;
       border-radius: 6px;
@@ -162,7 +162,7 @@
 
 <body>
 
-<!-- LOGIN SCREEN -->
+<!-- LOGIN -->
 <div id="loginScreen">
   <div class="box">
     <h2 style="text-align:center; margin-top:0;">Login</h2>
@@ -187,18 +187,6 @@
     <span style="opacity:0.7;">Using Online Database (Firestore)</span>
   </header>
 
-  <div class="stats">
-    <div class="stat-card">
-      <div>Total Vehicles</div>
-      <div id="totalVehicles" style="font-size:1.6rem; font-weight:700;">0</div>
-    </div>
-
-    <div class="stat-card">
-      <div>Upcoming Service</div>
-      <div id="needsService" style="font-size:1.6rem; font-weight:700;">0</div>
-    </div>
-  </div>
-
   <div class="layout">
     <!-- LEFT SIDE -->
     <div>
@@ -208,8 +196,8 @@
           <thead>
             <tr>
               <th>Photo</th>
-              <th>Name</th>
-              <th>Driver</th>
+              <th>Driver Name</th>
+              <th>Vehicle / Equipment</th>
               <th>Plate</th>
               <th>Next Service</th>
             </tr>
@@ -222,13 +210,13 @@
         <h3>Add New Vehicle</h3>
 
         <form id="vehicleForm">
-          <label>Name *</label>
-          <input id="name" required>
+          <label>Driver Name *</label>
+          <input id="driverName" required>
 
           <label>Plate *</label>
           <input id="plate" required>
 
-          <label>Driver</label>
+          <label>Vehicle / Equipment</label>
           <input id="driver">
 
           <label>Iqama</label>
@@ -278,15 +266,16 @@
 
           <div class="detail-grid">
 
-            <div><strong>Driver:</strong> <span id="detailsDriver"></span></div>
+            <div><strong>Vehicle / Equipment:</strong> <span id="detailsDriver"></span></div>
+            <div><strong>Driver Name:</strong> <span id="detailsTitle"></span></div>
+
             <div><strong>Plate:</strong> <span id="detailsPlate"></span></div>
-
             <div><strong>Iqama:</strong> <span id="detailsIqama"></span></div>
+
             <div><strong>License:</strong> <span id="detailsLicense"></span></div>
-
             <div><strong>Inspection:</strong> <span id="detailsInspection"></span></div>
-            <div><strong>Inspection Expiry:</strong> <span id="detailsExpiry"></span></div>
 
+            <div><strong>Inspection Expiry:</strong> <span id="detailsExpiry"></span></div>
             <div><strong>Medical Fitness Expiry:</strong> <span id="detailsMedicalExpiry"></span></div>
 
             <div><strong>Last Service:</strong> <span id="detailsService"></span></div>
@@ -303,7 +292,7 @@
   </div>
 </div>
 
-<!-- FIREBASE SCRIPT -->
+<!-- FIREBASE -->
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-app.js";
 import { getFirestore, collection, getDocs, addDoc, deleteDoc, doc }
@@ -346,36 +335,29 @@ let vehicles = [];
 let currentVehicleId = null;
 
 /* LOGIN */
-function attemptLogin() {
+document.getElementById("loginBtn").onclick = function () {
   if (loginUser.value === "samyoung" && loginPass.value === "FGIP-4") {
     loginScreen.style.display = "none";
     mainApp.style.display = "block";
   } else {
     loginError.style.display = "block";
   }
-}
-document.getElementById("loginBtn").onclick = attemptLogin;
+};
 
 /* LOAD VEHICLES */
 document.addEventListener("DOMContentLoaded", () => {
   window.dbApi.dbLoadVehicles().then(list => {
     vehicles = list;
-    renderStats();
     renderList();
   });
 });
 
-/* RENDER LIST */
-function renderStats() {
-  totalVehicles.textContent = vehicles.length;
-  needsService.textContent = vehicles.filter(v => v.nextServiceDate).length;
-}
-
+/* RENDER TABLE */
 function renderList() {
   vehicleTableBody.innerHTML = "";
+
   vehicles.forEach(v => {
     const tr = document.createElement("tr");
-    tr.dataset.id = v.id;
     tr.innerHTML = `
       <td>${v.imageDataUrl ? `<img class="thumb" src="${v.imageDataUrl}">` : "—"}</td>
       <td>${v.name}</td>
@@ -388,21 +370,21 @@ function renderList() {
   });
 }
 
-/* DETAILS */
+/* SHOW DETAILS */
 function showDetails(id) {
   const v = vehicles.find(x => x.id === id);
-  if (!v) return;
-
-  currentVehicleId = id;
 
   detailsTitle.textContent = v.name;
-  detailsDriver.textContent = v.driver || "—";
-  detailsPlate.textContent = v.plate || "—";
+  detailsDriver.textContent = v.driver;
+  detailsPlate.textContent = v.plate;
+
   detailsIqama.textContent = v.iqama || "—";
   detailsLicense.textContent = v.license || "—";
+
   detailsInspection.textContent = v.inspectionDate || "—";
   detailsExpiry.textContent = v.expiryDate || "—";
   detailsMedicalExpiry.textContent = v.medicalExpiryDate || "—";
+
   detailsService.textContent = v.serviceDate || "—";
   detailsNextService.textContent = v.nextServiceDate || "—";
 
@@ -420,28 +402,23 @@ function showDetails(id) {
   detailsBody.style.display = "block";
 }
 
-/* DELETE */
+/* DELETE VEHICLE */
 function deleteVehicle() {
   if (!currentVehicleId) return;
-
-  const v = vehicles.find(x => x.id === currentVehicleId);
-  if (!confirm("Delete " + v.name + "?")) return;
-
   window.dbApi.dbDeleteVehicle(currentVehicleId).then(() => {
-    vehicles = vehicles.filter(x => x.id !== currentVehicleId);
+    vehicles = vehicles.filter(v => v.id !== currentVehicleId);
     renderList();
-    renderStats();
     detailsBody.style.display = "none";
     detailsTitle.textContent = "No vehicle selected";
   });
 }
 
 /* ADD VEHICLE */
-function handleFormSubmit(e) {
+vehicleForm.onsubmit = function(e) {
   e.preventDefault();
 
   const data = {
-    name: name.value,
+    name: driverName.value,
     plate: plate.value,
     driver: driver.value,
     iqama: iqama.value,
@@ -462,7 +439,6 @@ function handleFormSubmit(e) {
     window.dbApi.dbAddVehicle(data).then(saved => {
       vehicles.push(saved);
       renderList();
-      renderStats();
       showDetails(saved.id);
     });
     vehicleForm.reset();
@@ -485,6 +461,7 @@ function handleFormSubmit(e) {
 
   function readImage(next) {
     if (!img) return next(null);
+
     const reader = new FileReader();
     reader.onload = () => next(reader.result);
     reader.readAsDataURL(img);
@@ -499,14 +476,12 @@ function handleFormSubmit(e) {
     });
   });
 
-}
-
-vehicleForm.onsubmit = handleFormSubmit;
-
+};
 </script>
 
 </body>
 </html>
+
 
 
 
