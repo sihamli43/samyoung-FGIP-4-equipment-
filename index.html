@@ -198,7 +198,7 @@
 
   <header>
     <h1><img src="assets/logo.png" alt="Logo">SAMYOUNG FGIP -4</h1>
-    <span style="opacity:0.7;">Using Online Database (Firestore)</span>
+    <span style="opacity:0.7%;">Using Online Database (Firestore)</span>
   </header>
 
   <!-- DASHBOARD STATS -->
@@ -437,7 +437,6 @@ function renderList() {
   vehicleTableBody.innerHTML = "";
 
   vehicles.forEach(v => {
-    // For older records that used imageDataUrl instead of images[]
     const firstImage =
       (v.images && v.images.length && v.images[0].dataUrl) ||
       v.imageDataUrl ||
@@ -478,7 +477,7 @@ function showDetails(id) {
   detailsService.textContent = v.serviceDate || "—";
   detailsNextService.textContent = v.nextServiceDate || "—";
 
-  // IMAGES (support both old single image and new images[])
+  // IMAGES (old single + new multiple)
   const imagesContainer = document.getElementById('detailsImages');
   imagesContainer.innerHTML = "";
   let allImages = [];
@@ -505,7 +504,7 @@ function showDetails(id) {
     imagesContainer.textContent = "No photos uploaded";
   }
 
-  // DOCUMENTS
+  // DOCUMENTS (multiple)
   detailsDocs.innerHTML = "";
   if (v.docs && v.docs.length) {
     v.docs.forEach(d => {
@@ -547,7 +546,6 @@ function startEdit() {
   serviceDate.value = v.serviceDate || "";
   nextServiceDate.value = v.nextServiceDate || "";
 
-  // Clear file inputs (can't prefill for security reasons)
   image.value = "";
   docs.value = "";
 
@@ -664,7 +662,6 @@ vehicleForm.onsubmit = function(e) {
       if (editing && existing && existing.images) {
         out = existing.images;
       } else if (editing && existing && existing.imageDataUrl) {
-        // old records
         out = [{ name: "photo", dataUrl: existing.imageDataUrl }];
       }
       return done(out);
