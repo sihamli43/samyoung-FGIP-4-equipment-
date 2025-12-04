@@ -268,7 +268,7 @@
           <label>Next Service Date</label>
           <input id="nextServiceDate" type="date">
 
-          <label>Photos (you can select 3–4)</label>
+          <label>Photos (you can select multiple)</label>
           <input id="image" type="file" accept="image/*" multiple>
 
           <label>Documents (PDF / images, multiple)</label>
@@ -355,11 +355,12 @@ async function dbAddVehicle(data) {
 }
 
 async function dbDeleteVehicle(id) {
-  await deleteDoc(doc(vehiclesCol, id));
+  const ref = doc(db, "vehicles", id);
+  await deleteDoc(ref);
 }
 
 async function dbUpdateVehicle(id, data) {
-  const ref = doc(vehiclesCol, id);
+  const ref = doc(db, "vehicles", id);
   await updateDoc(ref, data);
 }
 
@@ -436,14 +437,18 @@ function renderList() {
   vehicleTableBody.innerHTML = "";
 
   vehicles.forEach(v => {
-    const firstImage = v.images && v.images.length ? v.images[0].dataUrl : null;
+    // For older records that used imageDataUrl instead of images[]
+    const firstImage =
+      (v.images && v.images.length && v.images[0].dataUrl) ||
+      v.imageDataUrl ||
+      null;
 
     const tr = document.createElement("tr");
     tr.innerHTML = `
       <td>${firstImage ? `<img class="thumb" src="${firstImage}">` : "—"}</td>
-      <td>${v.name}</td>
+      <td>${v.name || "—"}</td>
       <td>${v.driver || "—"}</td>
-      <td>${v.plate}</td>
+      <td>${v.plate || "—"}</td>
       <td>${v.nextServiceDate || "—"}</td>
     `;
     tr.onclick = () => showDetails(v.id);
@@ -458,7 +463,7 @@ function showDetails(id) {
 
   currentVehicleId = v.id;
 
-  detailsTitle.textContent = v.name;
+  detailsTitle.textContent = v.name || "—";
   detailsDriver.textContent = v.driver || "—";
   detailsDriverName.textContent = v.name || "—";
   detailsPlate.textContent = v.plate || "—";
@@ -473,11 +478,19 @@ function showDetails(id) {
   detailsService.textContent = v.serviceDate || "—";
   detailsNextService.textContent = v.nextServiceDate || "—";
 
-  // IMAGES
+  // IMAGES (support both old single image and new images[])
   const imagesContainer = document.getElementById('detailsImages');
   imagesContainer.innerHTML = "";
-  if (v.images && v.images.length) {
-    v.images.forEach(img => {
+  let allImages = [];
+
+  if (v.images && Array.isArray(v.images) && v.images.length) {
+    allImages = v.images;
+  } else if (v.imageDataUrl) {
+    allImages = [{ name: "photo", dataUrl: v.imageDataUrl }];
+  }
+
+  if (allImages.length) {
+    allImages.forEach(img => {
       const a = document.createElement('a');
       a.href = img.dataUrl;
       a.target = "_blank";
@@ -534,6 +547,7 @@ function startEdit() {
   serviceDate.value = v.serviceDate || "";
   nextServiceDate.value = v.nextServiceDate || "";
 
+  // Clear file inputs (can't prefill for security reasons)
   image.value = "";
   docs.value = "";
 
@@ -649,6 +663,9 @@ vehicleForm.onsubmit = function(e) {
     if (!imageFiles.length) {
       if (editing && existing && existing.images) {
         out = existing.images;
+      } else if (editing && existing && existing.imageDataUrl) {
+        // old records
+        out = [{ name: "photo", dataUrl: existing.imageDataUrl }];
       }
       return done(out);
     }
@@ -676,6 +693,7 @@ vehicleForm.onsubmit = function(e) {
 
 </body>
 </html>
+
 
 
 
